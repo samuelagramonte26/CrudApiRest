@@ -14,19 +14,11 @@ class PersonaController extends Controller
      */
     public function index()
     {
-        $personas = Persona::all();
-        return response()->json($personas,200);
+        $personas = Persona::all(['id', 'nombre', 'apellido', 'edad', 'sexo']);
+        return response()->json($personas, 200);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        //
-    }
+  
 
     /**
      * Store a newly created resource in storage.
@@ -37,6 +29,28 @@ class PersonaController extends Controller
     public function store(Request $request)
     {
         //
+       $rules= [
+            'nombre'=>'required',
+            'apellido'=>'required',
+            'edad'=>'required',
+            'sexo'=>'required'
+        ];
+        $messages = [
+            'nombre.required'=>'El nombre es requerido',
+            'apellido.required'=>'El apellido requerido',
+            'edad.required'=>'La edad es requerida',
+            'sexo.required'=>'El sexo es requerido'
+
+        ];
+        $validator = validator($request->all(),$rules,$messages);
+        if($validator->fails()){
+           // $persona = Persona::create($request->only('nombre','apellido','edad','sexo'));
+            return response()->json($validator->errors()->all(),406);
+        }else{
+            $persona = Persona::create($request->only('nombre','apellido','edad','sexo'));
+            return response()->json(['Mensaje'=>'Insertado con Exito'],200);
+        }
+      
     }
 
     /**
@@ -45,21 +59,17 @@ class PersonaController extends Controller
      * @param  \App\Models\Persona  $persona
      * @return \Illuminate\Http\Response
      */
-    public function show(Persona $persona)
+    public function show($id)
     {
-        //
+        $result = Persona::find($id);
+        if (is_null($result)) {
+            return response(['Mensaje' => 'No se pudo encontrar'], 404);
+        } else {
+            return response()->json($result,200);
+        }
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\Models\Persona  $persona
-     * @return \Illuminate\Http\Response
-     */
-    public function edit(Persona $persona)
-    {
-        //
-    }
+    
 
     /**
      * Update the specified resource in storage.
