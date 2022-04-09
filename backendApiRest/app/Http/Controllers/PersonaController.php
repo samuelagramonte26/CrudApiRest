@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Persona;
+use Faker\Provider\ar_EG\Person;
 use Illuminate\Http\Request;
 
 class PersonaController extends Controller
@@ -14,8 +15,9 @@ class PersonaController extends Controller
      */
     public function index()
     {
-        $personas = Persona::all(['id', 'nombre', 'apellido', 'edad', 'sexo','status'])->where('status',1);
-        return response($personas, 200);
+        //$personas = Persona::all(['id', 'nombre', 'apellido', 'edad', 'sexo']) ;
+       $personas = Persona::active()->get(); 
+       return response()->json($personas, 200);
     }
 
   
@@ -44,10 +46,10 @@ class PersonaController extends Controller
         ];
         $validator = validator($request->all(),$rules,$messages);
         if($validator->fails()){
-            return response()->json($validator->errors()->all(),406);
+            return response()->json($validator->errors()->all(),200);
         }else{
             $persona = Persona::create($request->only('nombre','apellido','edad','sexo'));
-            return response()->json(['Mensaje'=>'Insertado con Exito'],200);
+            return response()->json(['Mensaje'=>'Insertado correctamente!','Status'=>true,'persona'=>$persona],200);
         }
       
     }
@@ -77,10 +79,12 @@ class PersonaController extends Controller
      * @param  \App\Models\Persona  $persona
      * @return \Illuminate\Http\Response
      */
+    
     public function update(Request $request, $id)
     {
         //
         $persona = Persona::find($id);
+      
         if(is_null($persona)){
             return response(['Mensaje' => 'No se pudo encontrar'], 404);
 
@@ -100,11 +104,11 @@ class PersonaController extends Controller
             ];
             $validator = validator($request->all(),$rules,$messages);
             if($validator->fails()){
-                return response()->json($validator->errors()->all(),406);
+                return response()->json($validator->errors()->all(),200);
             }else{
-                $persona->update($request->only('nombre','apellido','edad','sexo'));
+                $persona->update($request->all());
                 $persona->save();
-                return response()->json(['Mensaje'=>'Actualizado con Exito'],200);
+                return response()->json(["persona"=>$persona,"Status"=>true,"Mensaje"=>"Modificado Correctamente!"],200);
             }
         }
     }
@@ -120,12 +124,12 @@ class PersonaController extends Controller
         //
         $person = Persona::find($id);
         if(is_null($person)){
-            return response(['Mensaje' => 'No se pudo encontrar'], 404);
+            return response(['Mensaje' => 'No se pudo encontrar',"Status"=>false], 404);
         }
 
         $person->status = 0;
         $person->save();
-        return response()->json(["mensaje"=>"Eliminado con exito"],200);
+        return response()->json(["Mensaje"=>"Eliminado correctamente!   ","Status"=>true],200);
 
     }
 }

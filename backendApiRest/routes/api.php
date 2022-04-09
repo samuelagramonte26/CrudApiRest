@@ -23,5 +23,5 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 Route::get('personas','App\Http\Controllers\PersonaController@index');
 Route::get('personas/{id}','App\Http\Controllers\PersonaController@show');
 Route::post('personas/add','App\Http\Controllers\PersonaController@store');
-Route::put('personas/edit/{id}','App\Http\Controllers\PersonaController@update');
+Route::post('personas/edit/{id}','App\Http\Controllers\PersonaController@update');
 Route::delete('personas/delete/{id}','App\Http\Controllers\PersonaController@destroy');
