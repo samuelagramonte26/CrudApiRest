@@ -1,14 +1,17 @@
 
 import React, { useEffect, useState } from "react";
-import Axios from 'axios';
 import 'bootstrap/dist/css/bootstrap.min.css'
 import Alert from './components/Alert';
 import Modal from './components/Modal';
-import Table from './components/Table'
+import Table from './components/Table';
+import {GetData,DeleteData,PostData,PutData} from './provides/Api'
+import {handleForm} from './provides/handle'
 
 
 
 function App() {
+
+  //Hooks
   const [personas, setPersonas] = useState([]);
   const [abrirM, setAbrirModal] = useState(false);
   const [accion, setAccion] = useState('');
@@ -27,53 +30,10 @@ function App() {
     edad: '',
     sexo: ''
   }
-  let objAlert = {};
   const [msjAlert, setMsjAlert] = useState({ status: false, msj: [], variant: null, header: null });
-
-  const baseUriGet = 'https://localhost/crudApiRest/backendApiRest/public/api/personas';
-  const baseUriPost = 'https://localhost/crudApiRest/backendApiRest/public/api/personas/add';
-  const baseUriPut = 'https://localhost/crudApiRest/backendApiRest/public/api/personas/edit/';
-  let baseUriDelete = 'https://localhost/crudApiRest/backendApiRest/public/api/personas/delete/';
-  const getData = async () => {
-    await Axios.get(baseUriGet)
-      .then(data => setPersonas(data.data))
-      .catch(e => console.log(e))
-  }
-  /*const getDataShow = async (id) => {
-    await Axios.get(baseUriGet+'/'+id)
-      .then(data =>{
-        const { name, value } = data.data;
-    setPersonaDatos((datosPrevios) => ({
-      ...datosPrevios,
-      [name]: value
-    }))
-      })
-      .catch(e => console.log(e))
-  }*/
-  const deleteData = async (id) => {
-    baseUriDelete += id;
-    await Axios.delete(baseUriDelete)
-      .then(data => handResult(data))
-      .catch(e => console.log(e))
-  }
-  const postData = async () => {
-
-    await Axios.post(baseUriPost, handleForm())
-      .then(data => {
-        handResult(data)
-      })
-      .catch(e => console.log(e))
-
-  }
-  const putData = async (id) => {
-    await Axios.post(baseUriPut + id, handleForm())
-      .then(data => {
-        handResult(data)
-      })
-      .catch(e => console.log(e))
-  }
+  let objAlert = {};
   useEffect(() => {
-    getData();
+   GetData(setPersonas)
   }, [])
   const abrirModal = (accion) => {
     if (accion === "Agregar") {
@@ -84,14 +44,6 @@ function App() {
     if (!abrirM) {
       setPersonaDatos(cleanForm);
     }
-  }
-  const handleForm = () => {
-    let form = new FormData();
-    form.append('nombre', personaDatos.nombre);
-    form.append('apellido', personaDatos.apellido);
-    form.append('edad', personaDatos.edad);
-    form.append('sexo', personaDatos.sexo);
-    return form;
   }
   const handResult = (data) => {
     if (data.data.Status) {
@@ -111,25 +63,21 @@ function App() {
       objAlert.msj.push(data.data.Mensaje)
       setMsjAlert(objAlert);
       setAbrirModal(false)
-      objAlert.status = false;
-      window.setTimeout(() => {
-        setMsjAlert({ status: false, msj: [] })
+      setTimeout(() => {
+        setMsjAlert({ status: false, msj: [] })  
       }
-        , 4000)
+        , 5000)
     } else {
 
       objAlert = { status: true, msj: [], variant: 'warning', header: 'Advertencia' }
-
       data.data.forEach(element => {
         objAlert.msj.push(element);
-
       });
       setMsjAlert(objAlert)
-      objAlert.status = false;
-      window.setTimeout(() => {
+      setTimeout(() => {
         setMsjAlert({ status: false, msj: [] })
       }
-        , 4000)
+        , 5000)
     }
     setMethod({ add: false, edit: false });
 
@@ -145,13 +93,12 @@ function App() {
     setMethod({ add: false, edit: true });
     abrirModal('Editar');
     setPersonaDatos(persona);
-
   }
   const accionForm = () => {
     if (method.add) {
-      postData();
+      PostData(handResult,handleForm(personaDatos));
     } else {
-      putData(personaDatos.id);
+      PutData(personaDatos.id,handleForm(personaDatos),handResult);
     }
   }
   const eliminar = (id) => {
@@ -159,7 +106,7 @@ function App() {
       const newData = personas.filter(persona =>
         persona.id !== id
       )
-      deleteData(id);
+      DeleteData(id,handResult);
       setPersonas(newData);
     }
   }
